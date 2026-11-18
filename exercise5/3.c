@@ -1,0 +1,47 @@
+#include <fcntl.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <string.h>
+
+int main(int argc, char *argv[]){
+	pid_t p = fork();
+	if(p == -1){
+		perror("Error");
+		return 2;
+	}
+
+	if(p == 0){
+		int fd = open("test.txt", O_WRONLY | O_CREAT | O_TRUNC, 0644);
+
+		for(int i = 0; i < 10; i++){
+			char buffer[100];
+
+			int len = sprintf(buffer, "Child: %d", i);
+
+			write(fd, buffer, len);
+
+			sleep(1);
+		}
+		close(fd);
+	}
+	else{
+		int fd = open("test.txt", O_WRONLY | O_CREAT | O_TRUNC, 0644);
+
+		for(int i = 0; i < 10; i++){
+			char buffer[100];
+
+			int len = sprintf(buffer, "Parent: %d", i);
+
+			write(fd, buffer, len);
+
+			sleep(2);
+		}
+		close(fd);
+
+		wait(NULL);
+	}
+	return 0;
+}
+		
